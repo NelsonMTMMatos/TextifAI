@@ -18,7 +18,7 @@ Textify Video Editor is an innovative application designed to merge video, backg
 1. Clone the repository or download the source code:
 2. TODO
 
-### How to user
+### How to use
 
 In the application window:
 1. Select a video file.
