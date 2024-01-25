@@ -1,13 +1,22 @@
 import tkinter as tk
 import threading
+import os
+
+from dotenv import load_dotenv
 
 from tkinter import filedialog, messagebox
 from tkinter import ttk
-from moviepy.editor import VideoFileClip, AudioFileClip
+
+from moviepy.audio.fx.volumex import volumex
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
+from elevenlabs import generate, save
 
 
 class ImporterGUI:
     # Constants
+
+    ENV_PATH = './.env.local'
+
     FONT = 'Arial'
 
     VIDEO_EXTENSIONS = ['MP4', 'AVI', 'MOV']
@@ -15,6 +24,8 @@ class ImporterGUI:
     AUDIO_EXTENSIONS = ['MP3', 'WAV', 'ACC']
 
     def __init__(self):
+
+        load_dotenv(dotenv_path=self.ENV_PATH)
 
         self.progress_bar = None
         self.progressLabel = None
@@ -45,7 +56,7 @@ class ImporterGUI:
         self.selectedAudioLabel.pack(side="top", anchor='w', padx=20)
 
         self.textLabel = tk.Label(self.root, text="Write your caption below: ", font=(self.FONT, 16))
-        self.textLabel.pack(side="top", anchor='w', padx=10, pady=10)
+        self.textLabel.pack(side="top", anchor='w', padx=10, pady=15)
 
         self.textbox = tk.Text(self.root, height=10, font=(self.FONT, 16))
         self.textbox.pack(side="top", anchor='w', padx=20, pady=5)
@@ -99,6 +110,7 @@ class ImporterGUI:
 
     def generate(self):
         if self.currentVideo.get() and self.currentBackgroundAudio.get():
+            # Create a pop-up window with a progress bar.
             self.progress_window = tk.Toplevel(self.root)
             self.progress_window.title("Generating Video")
             self.progressLabel = ttk.Label(self.progress_window, text="Please wait, generating video...")
@@ -114,16 +126,22 @@ class ImporterGUI:
 
     def compose(self):
         try:
+
             video = VideoFileClip(self.currentVideo.get())
             video_duration = video.duration
 
             background_audio = AudioFileClip(self.currentBackgroundAudio.get())
+            background_audio = volumex(background_audio, 0.5)
             audio_duration = background_audio.duration
+
+            tts_audio = AudioFileClip("C:/Users/nelso/Documents/Projects/Textify/Storage/Results/output_caption.wav")
 
             if video_duration < audio_duration:
                 background_audio = background_audio.set_duration(video_duration)
 
-            output = video.set_audio(background_audio)
+            combined_audio = CompositeAudioClip([background_audio, tts_audio])
+
+            output = video.set_audio(combined_audio)
 
             output.write_videofile("C:/Users/nelso/Documents/Projects/Textify/Storage/Results/output_video.mp4",
                                    codec='libx264',
@@ -134,3 +152,9 @@ class ImporterGUI:
             self.progress_bar.stop()
             self.progress_window.destroy()
             messagebox.showinfo("Success", "Video was successfully generated.")
+
+    def tts(self):
+        tts = generate(api_key=os.getenv('ELEVEN_LABS_API_KEY'),
+                       text="I just want you to know that if you are out there and you are being really hard on yourself right now for something that has happened ... it's normal. That is what is going to happen to you in life. No one gets through unscathed. We are all going to have a few scratches on us. Please be kind to yourselves and stand up for yourself, please",
+                       voice="Adam")
+        save(tts, "C:/Users/nelso/Documents/Projects/Textify/Storage/Results/output_caption.wav")
