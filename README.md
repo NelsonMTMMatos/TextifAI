@@ -14,6 +14,7 @@ Textify Video Editor is an innovative application designed to merge video, backg
 - Python 3.x
 - Tkinter (usually comes up with Python)
 - Moviepy
+- Eleven Labs
 
 ### Installation
 1. Clone the repository or download the source code:
