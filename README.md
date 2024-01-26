@@ -1,4 +1,4 @@
-# Textify Video Editor
+# TextifAI Video Editor
 
 ## Introduction
 Textify Video Editor is an innovative application designed to merge video, background music, and AI-generated voice-over from user input text.
